@@ -16,14 +16,14 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-mysql")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    runtimeOnly("com.mysql:mysql-connector-j")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.0.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.1")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.21")
+    implementation("org.flywaydb:flyway-core:9.10.2")
+    runtimeOnly("org.postgresql:postgresql:42.5.1")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.0.1")
 }
 
 tasks.withType<KotlinCompile> {
