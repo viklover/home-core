@@ -1,13 +1,12 @@
-package ru.viklover.homecore.service
+package ru.viklover.homecore.homeobject
 
 import com.fasterxml.jackson.databind.JsonNode
 
 import org.springframework.stereotype.Service
 
-import ru.viklover.homecore.repository.ObjectRepository
-import ru.viklover.homecore.exception.homeobject.ObjectNotValidException
-import ru.viklover.homecore.exception.homeobject.ObjectParametersNotFound
-import ru.viklover.homecore.exception.homeobject.ObjectNotFoundException
+import ru.viklover.homecore.homeobject.exception.ObjectNotValidException
+import ru.viklover.homecore.homeobject.exception.ObjectParametersNotFound
+import ru.viklover.homecore.homeobject.exception.ObjectNotFoundException
 
 @Service
 class ObjectService(

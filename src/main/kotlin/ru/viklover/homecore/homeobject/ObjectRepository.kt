@@ -1,4 +1,4 @@
-package ru.viklover.homecore.repository
+package ru.viklover.homecore.homeobject
 
 import com.fasterxml.jackson.databind.JsonNode
 
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 
 import ru.viklover.homecore.util.JdbcUtil
 import ru.viklover.homecore.util.ObjectFieldsUtil
-import ru.viklover.homecore.exception.homeobject.ObjectNotFoundException
+import ru.viklover.homecore.homeobject.exception.ObjectNotFoundException
 
 @Service
 @CacheConfig(cacheNames = ["findById"])

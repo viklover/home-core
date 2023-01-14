@@ -1,4 +1,4 @@
-package ru.viklover.homecore.exception.homeobject
+package ru.viklover.homecore.homeobject.exception
 
 import ru.viklover.homecore.exception.NotFoundException
 

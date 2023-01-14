@@ -1,14 +1,12 @@
-package ru.viklover.homecore.controller
+package ru.viklover.homecore.homeobject
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.contains
 
-import ru.viklover.homecore.exception.homeobject.ObjectNotValidException
-import ru.viklover.homecore.exception.homeobject.ObjectParsingException
+import ru.viklover.homecore.homeobject.exception.ObjectNotValidException
+import ru.viklover.homecore.homeobject.exception.ObjectParsingException
 
 import org.springframework.web.bind.annotation.*
-
-import ru.viklover.homecore.service.ObjectService
 
 @RestController
 @CrossOrigin
