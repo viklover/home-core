@@ -3,6 +3,9 @@ package ru.viklover.homecore.repository
 import com.fasterxml.jackson.databind.JsonNode
 
 import org.springframework.stereotype.Service
+import org.springframework.cache.annotation.CacheConfig
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.transaction.annotation.Transactional
@@ -12,6 +15,7 @@ import ru.viklover.homecore.util.ObjectFieldsUtil
 import ru.viklover.homecore.exception.homeobject.ObjectNotFoundException
 
 @Service
+@CacheConfig(cacheNames = ["findById"])
 class ObjectRepository(
     private val jdbcTemplate: JdbcTemplate,
     private val jdbcUtil: JdbcUtil,
@@ -74,6 +78,10 @@ class ObjectRepository(
         )
     }
 
+    fun checkExistingObjectById(id: Number): Boolean {
+        return jdbcTemplate.queryForObject("select exists(select * from object where id = ?)", Boolean::class.java, id)
+    }
+
     fun checkValidityObjectFields(jsonNode: JsonNode, objectClass: String, objectKind: String,
                                   ignoreId: Boolean = false): Boolean {
 
@@ -105,10 +113,6 @@ class ObjectRepository(
         }
 
         return true
-    }
-
-    fun checkExistingObjectById(id: Number): Boolean {
-        return jdbcTemplate.queryForObject("select exists(select * from object where id = ?)", Boolean::class.java, id)
     }
 
 
@@ -155,11 +159,10 @@ class ObjectRepository(
     }
 
     @Transactional
-    fun updateObject(jsonNode: JsonNode, objectClass: String, objectKind: String): Map<String, Any> {
+    @CachePut(value = ["findById"], key = "#id")
+    fun updateObject(id: Number, jsonNode: JsonNode, objectClass: String, objectKind: String): Map<String, Any> {
 
-        val objectId = jsonNode["id"].asLong()
-
-        val (objectType, currentObjectKind) = findObjectTypeAndKindById(objectId)
+        val (objectType, currentObjectKind) = findObjectTypeAndKindById(id)
 
         val objectFields = objectFieldsUtil.toMapFromJsonWithInfo(jsonNode, objectType, objectClass, objectKind)
 
@@ -173,18 +176,18 @@ class ObjectRepository(
             updatedFields = objectFields.filterKeys { columnsTable.contains(it) }
 
             conditions = if (table == "object")
-                mapOf("id" to objectId)
+                mapOf("id" to id)
             else
-                mapOf("object_id" to objectId)
+                mapOf("object_id" to id)
 
             jdbcUtil.update(table, updatedFields, conditions)
         }
 
         if (currentObjectKind != objectKind) {
-            objectFields["object_id"] = objectId
+            objectFields["object_id"] = id
 
             if (currentObjectKind != "default")
-                jdbcUtil.delete("${objectClass}__$currentObjectKind", mapOf("object_id" to objectId))
+                jdbcUtil.delete("${objectClass}__$currentObjectKind", mapOf("object_id" to id))
 
             columnsTable = jdbcUtil.getColumnsListByTable("${objectClass}__$objectKind")
             updatedFields = objectFields.filterKeys { columnsTable.contains(it) }
@@ -192,9 +195,10 @@ class ObjectRepository(
             jdbcUtil.insertInto("${objectClass}__$objectKind", updatedFields)
         }
 
-        return findById(objectId)
+        return findById(id)
     }
 
+    @Cacheable(value = ["findById"], key = "#id")
     fun findById(id: Number): Map<String, Any> {
 
         val (objectType, objectClass, objectKind) = findObjectInfoById(id)

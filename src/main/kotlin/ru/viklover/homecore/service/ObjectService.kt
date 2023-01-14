@@ -1,14 +1,13 @@
 package ru.viklover.homecore.service
 
-import org.springframework.stereotype.Service
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.contains
-import ru.viklover.homecore.exception.homeobject.ObjectNotFoundException
+
+import org.springframework.stereotype.Service
 
 import ru.viklover.homecore.repository.ObjectRepository
 import ru.viklover.homecore.exception.homeobject.ObjectNotValidException
 import ru.viklover.homecore.exception.homeobject.ObjectParametersNotFound
-import ru.viklover.homecore.exception.homeobject.ObjectParsingException
+import ru.viklover.homecore.exception.homeobject.ObjectNotFoundException
 
 @Service
 class ObjectService(
@@ -16,10 +15,6 @@ class ObjectService(
 ) {
 
     fun create(objectClass: String, objectKind: String, jsonNode: JsonNode): Map<String, Any> {
-
-        if (!jsonNode.isObject) {
-            throw ObjectParsingException("JSON Object is expected in the request body!")
-        }
 
         if (!objectRepository.checkExistingClassAndKind(objectClass, objectKind)) {
             throw ObjectParametersNotFound("One of parameters doesn't exists - class: $objectClass, kind: $objectKind")
@@ -32,25 +27,13 @@ class ObjectService(
         return objectRepository.createObject(jsonNode, objectClass, objectKind)
     }
 
-    fun update(jsonNode: JsonNode, objectKind: String): Map<String, Any> {
+    fun update(id: Number, objectKind: String, jsonNode: JsonNode): Map<String, Any> {
 
-        if (!jsonNode.isObject) {
-            throw ObjectParsingException("JSON Object is expected in the request body!")
+        if (!objectRepository.checkExistingObjectById(id)) {
+            throw ObjectNotFoundException("Object with id '$id' doesn't exists")
         }
 
-        if (!jsonNode.contains("id")) {
-            throw ObjectNotValidException("'id' is not found in request body")
-        } else if (!jsonNode["id"].isNumber) {
-            throw ObjectNotValidException("'id' field has to be number type: current type is ${jsonNode["id"].nodeType}")
-        }
-
-        val objectId = jsonNode["id"].asLong()
-
-        if (!objectRepository.checkExistingObjectById(objectId)) {
-            throw ObjectNotFoundException("Object with id '$objectId' doesn't exists")
-        }
-
-        val objectClass = objectRepository.findObjectClassById(objectId)
+        val objectClass = objectRepository.findObjectClassById(id)
 
         if (!objectRepository.checkExistingClassAndKind(objectClass, objectKind)) {
             throw ObjectParametersNotFound("One of parameters doesn't exists - class: $objectClass, kind: $objectKind")
@@ -60,7 +43,7 @@ class ObjectService(
             throw ObjectNotValidException("Object does not match expected fields")
         }
 
-        return objectRepository.updateObject(jsonNode, objectClass, objectKind)
+        return objectRepository.updateObject(id, jsonNode, objectClass, objectKind)
     }
 
     fun findAll(): List<Map<String, Any>> {
